@@ -112,16 +112,25 @@ def execute_lines(lines: list[str]) -> Stepthrough:
 
 
 def print_stepthrough(stepthrough: Stepthrough) -> str:
-    max_instruction = max(s[0] for s in stepthrough)
-    max_line = max(s[1] for s in stepthrough)
-
     final_variables = stepthrough[-1][2]
-    max_variables = {}
+
+    column_headers = ['Instruction', 'Line', *final_variables.keys()]
+    column_contents = []
+    column_contents.append([str(s[0]) for s in stepthrough])
+    column_contents.append([s[1] for s in stepthrough])
     for v in final_variables:
-        max_variables[v] = max(len(s[2].get(v, '')) for s in stepthrough)
-        max_variables[v] = max(max_variables[v], len(v))
+        column_contents.append([str(s[2].get(v, '')) for s in stepthrough])
+
+    column_widths = [max(len(x) for x in column) for column in column_contents]
 
     table_lines = []
 
+    header = PRINT_SEP.join(value.ljust(width) for value, width in zip(column_headers, column_widths))
+    table_lines.append(header)
+    underline = PRINT_UNDERLINE * len(header)
+    table_lines.append(underline)
+    for i in range(len(stepthrough)):
+        row = [c[i] for c in column_contents]
+        table_lines.append(PRINT_SEP.join(str(value).ljust(width) for value, width in zip(row, column_widths)))
 
     return '\n'.join(table_lines)
