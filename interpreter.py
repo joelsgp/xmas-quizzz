@@ -9,6 +9,7 @@ REGEX_JUMP = re.compile(r'^JPZ ([a-z]+)$')
 REGEX_OPERATION = re.compile(r'^(AND|XOR) ([A-Z]+|[0-9]+) ([A-Z]+|[0-9]+)$')
 PRINT_SEP = '  '
 PRINT_UNDERLINE = '-'
+PRINT_BINARY_FORMAT = '{:0>8b}'
 SOURCE_FILE = 'ADDER.asm'
 
 
@@ -18,7 +19,7 @@ Stepthrough = list[tuple[int, str, Namespace]]
 
 
 def process_lines(source: str) -> Lines:
-    return [m[1] for m in REGEX_LINE.finditer(source)]
+    return [m[1] for m in REGEX_LINE.finditer(source) if m[1]]
 
 
 def get_addresses(lines: list[str]) -> Namespace:
@@ -106,6 +107,8 @@ def execute_lines(lines: list[str]) -> Stepthrough:
             instruction += 1
             continue
 
+        raise ValueError(f'Invalid instruction: "{l}".')
+
     return stepthrough
 
 
@@ -117,11 +120,20 @@ def print_stepthrough(stepthrough: Stepthrough) -> str:
     column_contents.append([str(s[0]) for s in stepthrough])
     column_contents.append([s[1] for s in stepthrough])
     for v in final_variables:
-        column_contents.append([str(s[2].get(v, '')) for s in stepthrough])
-    for header, column in zip(column_headers, column_contents):
-        column.insert(0, header)
+        variable_column = []
+        for s in stepthrough:
+            value = s[2].get(v)
+            if value is None:
+                variable_column.append('')
+            else:
+                variable_column.append(PRINT_BINARY_FORMAT.format(value))
+        column_contents.append(variable_column)
 
-    column_widths = [max(len(x) for x in column) for column in column_contents]
+    column_widths_headless = [max(len(x) for x in column) for column in column_contents]
+    column_widths = [max(len(head), max_value) for head, max_value in zip(column_headers, column_widths_headless)]
+    # pad instruction counter
+    ic_fstring = f'{{:>{column_widths_headless[0]}}}'
+    column_contents[0] = [ic_fstring.format(ic) for ic in column_contents[0]]
 
     table_lines = []
 
@@ -130,7 +142,7 @@ def print_stepthrough(stepthrough: Stepthrough) -> str:
     underline = PRINT_UNDERLINE * len(header)
     table_lines.append(underline)
     for i in range(len(stepthrough)):
-        row_list = [c[i + 1] for c in column_contents]
+        row_list = [c[i] for c in column_contents]
         row = PRINT_SEP.join(str(value).ljust(width) for value, width in zip(row_list, column_widths))
         table_lines.append(row)
 
