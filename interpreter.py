@@ -7,7 +7,7 @@ REGEX_ADDRESS = re.compile(r'^([A-Z][a-z]*):$')
 REGEX_ASSIGNMENT = re.compile(r'^([A-Z]+) = ([A-Z]+|[0-9]+)$')
 REGEX_JUMP = re.compile(r'^JPZ ([a-z]+)$')
 REGEX_OPERATION = re.compile(r'^(AND|XOR) ([A-Z]+|[0-9]+) ([A-Z]+|[0-9]+)$')
-PRINT_SEP = ' '
+PRINT_SEP = '  '
 PRINT_UNDERLINE = '-'
 SOURCE_FILE = 'ADDER.asm'
 
@@ -118,6 +118,8 @@ def print_stepthrough(stepthrough: Stepthrough) -> str:
     column_contents.append([s[1] for s in stepthrough])
     for v in final_variables:
         column_contents.append([str(s[2].get(v, '')) for s in stepthrough])
+    for header, column in zip(column_headers, column_contents):
+        column.insert(0, header)
 
     column_widths = [max(len(x) for x in column) for column in column_contents]
 
@@ -128,8 +130,9 @@ def print_stepthrough(stepthrough: Stepthrough) -> str:
     underline = PRINT_UNDERLINE * len(header)
     table_lines.append(underline)
     for i in range(len(stepthrough)):
-        row = [c[i] for c in column_contents]
-        table_lines.append(PRINT_SEP.join(str(value).ljust(width) for value, width in zip(row, column_widths)))
+        row_list = [c[i + 1] for c in column_contents]
+        row = PRINT_SEP.join(str(value).ljust(width) for value, width in zip(row_list, column_widths))
+        table_lines.append(row)
 
     return '\n'.join(table_lines)
 
