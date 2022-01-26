@@ -124,7 +124,7 @@ def execute_lines(lines: list[str]) -> Stepthrough:
 def print_stepthrough(stepthrough: Stepthrough) -> str:
     final_variables = stepthrough[-1][2]
 
-    column_headers = ['Instruction', 'Line', *final_variables.keys()]
+    column_headers = ['IC', 'Instruction', *final_variables.keys()]
     column_contents = []
     column_contents.append([str(s[0]) for s in stepthrough])
     column_contents.append([s[1] for s in stepthrough])
