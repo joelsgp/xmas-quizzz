@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from copy import copy
 
 
 REGEX_LINE = re.compile(r'^\s*(.*?)\s*(?://.*)?$', re.MULTILINE)
@@ -9,6 +8,10 @@ REGEX_ADDRESS = re.compile(r'^([A-Z][a-z]*):$')
 REGEX_ASSIGNMENT = re.compile(r'^([A-Z]+) = ([A-Z]+|[0-9]+)$')
 REGEX_JUMP = re.compile(r'^JPZ ([a-z]+)$')
 REGEX_OPERATION = re.compile(r'^(AND|XOR) ([A-Z]+|[0-9]+) ([A-Z]+|[0-9]+)$')
+
+
+PRINT_SEP = ' '
+PRINT_UNDERLINE = '-'
 
 
 Namespace = dict[str, int]
@@ -39,7 +42,7 @@ def extract_arg(arg: str, variables: Namespace) -> int:
 
 
 def update_stepthrough(stepthrough: Stepthrough, instruction: int, line: str, variables: Namespace):
-    new_step = (instruction, line, copy(variables))
+    new_step = (instruction, line, variables.copy())
     stepthrough.append(new_step)
 
 
@@ -106,3 +109,19 @@ def execute_lines(lines: list[str]) -> Stepthrough:
             continue
 
     return stepthrough
+
+
+def print_stepthrough(stepthrough: Stepthrough) -> str:
+    max_instruction = max(s[0] for s in stepthrough)
+    max_line = max(s[1] for s in stepthrough)
+
+    final_variables = stepthrough[-1][2]
+    max_variables = {}
+    for v in final_variables:
+        max_variables[v] = max(len(s[2].get(v, '')) for s in stepthrough)
+        max_variables[v] = max(max_variables[v], len(v))
+
+    table_lines = []
+
+
+    return '\n'.join(table_lines)
