@@ -6,9 +6,9 @@ from copy import copy
 
 REGEX_LINE = re.compile(r'^\s*(.*?)\s*(?://.*)?$', re.MULTILINE)
 REGEX_ADDRESS = re.compile(r'^([A-Z][a-z]*):$')
-REGEX_ASSIGNMENT = re.compile(r'^([A-Z]+) = ((?P<name>[A-Z]+)|(?P<int>[0-9]+))$')
+REGEX_ASSIGNMENT = re.compile(r'^([A-Z]+) = ([A-Z]+|[0-9]+)$')
 REGEX_JUMP = re.compile(r'^JPZ ([a-z]+)$')
-REGEX_OPERATION = re.compile(r'^(AND|XOR)$')
+REGEX_OPERATION = re.compile(r'^(AND|XOR) ([A-Z]+|[0-9]+) ([A-Z]+|[0-9]+)$')
 
 
 Namespace = dict[str, int]
@@ -31,9 +31,14 @@ def get_addresses(lines: list[str]) -> Namespace:
     return addresses
 
 
+def extract_argument(arg: str, variables: Namespace) -> int:
+    if arg
+
+
 def execute_lines(lines: list[str]) -> Stepthrough:
     stepthrough = []
     variables = {}
+    last_calculation = 0
     instruction = 0
     instruction_max = len(lines)
     addresses = get_addresses(lines)
@@ -54,21 +59,33 @@ def execute_lines(lines: list[str]) -> Stepthrough:
         match = REGEX_ASSIGNMENT.match(l)
         if match is not None:
             name = match[1]
-            try:
-                assign_name = match['name']
-            except IndexError:
-                assign_int = match['int']
-                variables[name] = int(assign_int)
+            assignee = match[2]
+            if assignee.isdigit():
+                variables[name] = int(assignee)
             else:
-                variables[name] = variables[assign_name]
+                variables[name] = variables[assignee]
             instruction += 1
             continue
 
         # jump
         match = REGEX_JUMP.match(l)
         if match is not None:
-            jump_address = match[1]
-            instruction = addresses[jump_address]
+            if last_calculation == 0:
+                jump_address = match[1]
+                instruction = addresses[jump_address]
+            else:
+                instruction += 1
             continue
+
+        # and, xor
+        match = REGEX_OPERATION.match(l)
+        if match is not None:
+            arg_left = match[2]
+            if arg_left.isdigit():
+            arg_right = match[3]
+            op = match[1]
+            # if op == 'AND':
+            #     last_calculation =
+
 
     return stepthrough
