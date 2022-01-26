@@ -1,5 +1,15 @@
+"""Simple assembly interpreter.
+
+Designed for the Very Very Reduced Instruction Set language specified in xmas quizzz.
+File to run specified by SOURCE_FILE, haven't bothered to add an argparser.
+Sorry for python 3, python 2 is too expensive
+"""
+
 from __future__ import annotations
 import re
+
+
+SOURCE_FILE = 'ADDER.asm'
 
 
 REGEX_LINE = re.compile(r'^\s*(.*?)\s*(?://.*)?$', re.MULTILINE)
@@ -10,7 +20,6 @@ REGEX_OPERATION = re.compile(r'^(AND|XOR) ([A-Z]+|[0-9]+) ([A-Z]+|[0-9]+)$')
 PRINT_SEP = '  '
 PRINT_UNDERLINE = '-'
 PRINT_BINARY_FORMAT = '{:0>8b}'
-SOURCE_FILE = 'ADDER.asm'
 
 
 Namespace = dict[str, int]
@@ -100,7 +109,7 @@ def execute_lines(lines: list[str]) -> Stepthrough:
             if op == 'AND':
                 last_calculation = arg_left_ex & arg_right_ex
             elif op == 'XOR':
-                last_calculation = arg_right_ex ^ arg_right_ex
+                last_calculation = arg_left_ex ^ arg_right_ex
             if not arg_left.isdigit():  # left arg is a name not a literal
                 variables[arg_left] = last_calculation
             update_stepthrough(stepthrough, instruction, l, variables)
