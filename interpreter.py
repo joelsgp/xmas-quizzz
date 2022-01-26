@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import re
 
 
@@ -8,10 +7,9 @@ REGEX_ADDRESS = re.compile(r'^([A-Z][a-z]*):$')
 REGEX_ASSIGNMENT = re.compile(r'^([A-Z]+) = ([A-Z]+|[0-9]+)$')
 REGEX_JUMP = re.compile(r'^JPZ ([a-z]+)$')
 REGEX_OPERATION = re.compile(r'^(AND|XOR) ([A-Z]+|[0-9]+) ([A-Z]+|[0-9]+)$')
-
-
 PRINT_SEP = ' '
 PRINT_UNDERLINE = '-'
+SOURCE_FILE = 'ADDER.asm'
 
 
 Namespace = dict[str, int]
@@ -134,3 +132,16 @@ def print_stepthrough(stepthrough: Stepthrough) -> str:
         table_lines.append(PRINT_SEP.join(str(value).ljust(width) for value, width in zip(row, column_widths)))
 
     return '\n'.join(table_lines)
+
+
+def main():
+    with open(SOURCE_FILE, encoding='utf-8') as file:
+        source = file.read()
+    lines = process_lines(source)
+    stepthrough = execute_lines(lines)
+    table = print_stepthrough(stepthrough)
+    print(table)
+
+
+if __name__ == '__main__':
+    main()
