@@ -101,7 +101,7 @@ def execute_lines(lines: list[str]) -> Stepthrough:
                 last_calculation = arg_left_ex & arg_right_ex
             elif op == 'XOR':
                 last_calculation = arg_right_ex ^ arg_right_ex
-            if arg_left != arg_left_ex:
+            if not arg_left.isdigit():  # left arg is a name not a literal
                 variables[arg_left] = last_calculation
             update_stepthrough(stepthrough, instruction, l, variables)
             instruction += 1
