@@ -21,17 +21,11 @@ Fulladd:
     SUM = D
     XOR SUM CIN
 
-    // another intermediary
+    // carry output
     E = D
     AND E CIN
     // inclusive or operation
     F = E
-    XOR F C
-    G = E
-    AND G C
-    XOR F G
-    // carry output
-    CARRY = F
 
     // return
     AND 0 0
