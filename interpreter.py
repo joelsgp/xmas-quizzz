@@ -37,7 +37,7 @@ def get_addresses(lines: list[str]) -> Namespace:
     for index, l in enumerate(lines):
         match = REGEX_ADDRESS.match(l)
         if match is not None:
-            addresses[match[1].lower()] = index
+            addresses[match[1].upper()] = index
 
     return addresses
 
@@ -93,7 +93,7 @@ def execute_lines(lines: list[str]) -> Stepthrough:
         if match is not None:
             update_stepthrough(stepthrough, ic, instruction, variables)
             if last_calculation == 0:
-                jump_address = match[1]
+                jump_address = match[1].upper()
                 ic = variables[jump_address]
             else:
                 ic += 1
