@@ -7,6 +7,12 @@ Y = 35  // 00100011
 // x + y = (x ^ y) + ((x & y) << 1)
 // left shift implemented with the horrible copypasted block
 // recursion
+// note that
+//     A = B
+//     is equivalent to
+//     AND A 0
+//     XOR A B
+// as per Q2, and is used for simplicity
 
 Addstart:
     // XOR for sum
