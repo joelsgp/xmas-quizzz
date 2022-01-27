@@ -1,12 +1,15 @@
 // inputs
-X = 14  // 00001110
-Y = 35  // 00100011
+// X = 14  // 00001110
+// Y = 35  // 00100011
+// commented out for the sake of automated testing (test_adder.py)
 
 
 // program
+
 // x + y = (x ^ y) + ((x & y) << 1)
 // left shift implemented with the horrible copypasted block
 // recursion
+
 // note that
 //     A = B
 //     is equivalent to

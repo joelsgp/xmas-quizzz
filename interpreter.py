@@ -54,13 +54,12 @@ def update_stepthrough(stepthrough: Stepthrough, instruction: int, line: str, va
     stepthrough.append(new_step)
 
 
-def execute_lines(lines: list[str]) -> Stepthrough:
+def execute_lines(lines: list[str], variables: Namespace) -> Stepthrough:
     stepthrough = []
     last_calculation = 0
     ic = 0
     ic_max = len(lines)
     addresses = get_addresses(lines)
-    variables = {}
     variables.update(addresses)
 
     update_stepthrough(stepthrough, ic, '', variables)
@@ -170,11 +169,19 @@ def print_stepthrough(stepthrough: Stepthrough) -> str:
     return '\n'.join(table_lines)
 
 
-def main():
-    with open(SOURCE_FILE, encoding='utf-8') as file:
+def run_file(file_path: str, args: Namespace = None) -> Stepthrough:
+    if args is None:
+        args = {}
+
+    with open(file_path, encoding='utf-8') as file:
         source = file.read()
     lines = process_lines(source)
-    stepthrough = execute_lines(lines)
+    stepthrough = execute_lines(lines, args)
+    return stepthrough
+
+
+def main():
+    stepthrough = run_file(SOURCE_FILE)
     table = print_stepthrough(stepthrough)
     print(table)
 
