@@ -4,30 +4,18 @@ Y = 35  // 00100011
 
 
 // program
+SUM = X
 
-// full adder subroutine
-// inputs: A, B, CIN
-// outputs: CARRY, SUM
-// locals: C, D, E
-// jumps to: returnfulladd
-Fulladd:
-    // intermediaries
-    C = A
-    AND C B
-    D = A
-    XOR D B
 
-    // sum output
-    SUM = D
-    XOR SUM CIN
+Addstart:
+    XOR SUM Y
+    AND Y X
+    JPZ addend
 
-    // carry output
-    E = D
-    AND E CIN
-    // inclusive or operation
-    F = E
-
-    // return
+    X = SUM
     AND 0 0
-    JPZ returnfulladd
+    JPZ addstart
 
+
+Addend:
+    X = SUM  // 00110001
