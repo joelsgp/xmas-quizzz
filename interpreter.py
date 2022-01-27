@@ -37,7 +37,7 @@ def get_addresses(lines: list[str]) -> Namespace:
     for index, l in enumerate(lines):
         match = REGEX_ADDRESS.match(l)
         if match is not None:
-            addresses[match[1].lower()] = index
+            addresses[match[1].upper()] = index
 
     return addresses
 
@@ -54,52 +54,56 @@ def update_stepthrough(stepthrough: Stepthrough, instruction: int, line: str, va
     stepthrough.append(new_step)
 
 
-def execute_lines(lines: list[str]) -> Stepthrough:
+def execute_lines(lines: list[str], args: Namespace) -> Stepthrough:
     stepthrough = []
-    variables = {}
     last_calculation = 0
-    instruction = 0
-    instruction_max = len(lines)
+    ic = 0
+    ic_max = len(lines)
     addresses = get_addresses(lines)
+    variables = {}
+    variables.update(addresses)
+    update_stepthrough(stepthrough, ic, '(Addresses)', variables)
+    variables.update(args)
+    update_stepthrough(stepthrough, ic, '(Args)', variables)
 
     # the duplicated loop continuation blocks are a bit nasty
     while True:
         # end of file
-        if instruction >= instruction_max:
+        if ic >= ic_max:
             break
 
-        l = lines[instruction]
+        instruction = lines[ic]
 
         # address declarations are skipped
-        if instruction in addresses.values():
-            update_stepthrough(stepthrough, instruction, l, variables)
-            instruction += 1
+        if ic in addresses.values():
+            update_stepthrough(stepthrough, ic, instruction, variables)
+            ic += 1
             continue
 
         # assignment
-        match = REGEX_ASSIGNMENT.match(l)
+        match = REGEX_ASSIGNMENT.match(instruction)
         if match is not None:
             name = match[1]
             assignee = match[2]
             assignee_ex = extract_arg(assignee, variables)
             variables[name] = assignee_ex
-            update_stepthrough(stepthrough, instruction, l, variables)
-            instruction += 1
+            update_stepthrough(stepthrough, ic, instruction, variables)
+            ic += 1
             continue
 
         # jump
-        match = REGEX_JUMP.match(l)
+        match = REGEX_JUMP.match(instruction)
         if match is not None:
-            update_stepthrough(stepthrough, instruction, l, variables)
+            update_stepthrough(stepthrough, ic, instruction, variables)
             if last_calculation == 0:
-                jump_address = match[1]
-                instruction = addresses[jump_address]
+                jump_address = match[1].upper()
+                ic = variables[jump_address]
             else:
-                instruction += 1
+                ic += 1
             continue
 
         # and, xor
-        match = REGEX_OPERATION.match(l)
+        match = REGEX_OPERATION.match(instruction)
         if match is not None:
             arg_left = match[2]
             arg_right = match[3]
@@ -112,23 +116,30 @@ def execute_lines(lines: list[str]) -> Stepthrough:
                 last_calculation = arg_left_ex ^ arg_right_ex
             if not arg_left.isdigit():  # left arg is a name not a literal
                 variables[arg_left] = last_calculation
-            update_stepthrough(stepthrough, instruction, l, variables)
-            instruction += 1
+            update_stepthrough(stepthrough, ic, instruction, variables)
+            ic += 1
             continue
 
-        raise ValueError(f'Invalid instruction: "{l}".')
+        raise ValueError(f'Invalid instruction: "{instruction}".')
 
     return stepthrough
 
 
 def print_stepthrough(stepthrough: Stepthrough) -> str:
+    addresses = stepthrough[0][2]
     final_variables = stepthrough[-1][2]
 
-    column_headers = ['IC', 'Instruction', *final_variables.keys()]
-    column_contents = []
-    column_contents.append([str(s[0]) for s in stepthrough])
-    column_contents.append([s[1] for s in stepthrough])
+    column_headers = ['IC', 'Instruction']
+    column_contents = [
+        [str(s[0]) for s in stepthrough],
+        [s[1] for s in stepthrough],
+    ]
     for v in final_variables:
+        # don't print hardcoded addresses
+        if v in addresses:
+            continue
+
+        column_headers.append(v)
         variable_column = []
         for s in stepthrough:
             value = s[2].get(v)
@@ -139,7 +150,9 @@ def print_stepthrough(stepthrough: Stepthrough) -> str:
         column_contents.append(variable_column)
 
     column_widths_headless = [max(len(x) for x in column) for column in column_contents]
-    column_widths = [max(len(head), max_value) for head, max_value in zip(column_headers, column_widths_headless)]
+    column_widths = [
+        max(len(head), max_value) for head, max_value in zip(column_headers, column_widths_headless)
+    ]
     # pad instruction counter
     ic_fstring = f'{{:>{column_widths_headless[0]}}}'
     column_contents[0] = [ic_fstring.format(ic) for ic in column_contents[0]]
@@ -158,11 +171,19 @@ def print_stepthrough(stepthrough: Stepthrough) -> str:
     return '\n'.join(table_lines)
 
 
-def main():
-    with open(SOURCE_FILE, encoding='utf-8') as file:
+def run_file(file_path: str, args: Namespace = None) -> Stepthrough:
+    if args is None:
+        args = {}
+
+    with open(file_path, encoding='utf-8') as file:
         source = file.read()
     lines = process_lines(source)
-    stepthrough = execute_lines(lines)
+    stepthrough = execute_lines(lines, args)
+    return stepthrough
+
+
+def main():
+    stepthrough = run_file(SOURCE_FILE, {'X': 14, 'Y': 35})
     table = print_stepthrough(stepthrough)
     print(table)
 
