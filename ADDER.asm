@@ -4,10 +4,13 @@ Y = 35  // 00100011
 
 
 // program
-SUM = X
+// x + y = (x ^ y) + ((x & y) << 1)
+// left shift implemented with the horrible copypasted block
+// recursion
 
 Addstart:
     // XOR for sum
+    SUM = X
     XOR SUM Y
 
     // AND, then left shift for carry
@@ -15,55 +18,63 @@ Addstart:
     CARRY = 0
     // bit 2^0
     A = Y
-    XOR A 254
+    AND A 1
     JPZ shiftzero
     XOR CARRY 2
     Shiftzero:
     // bit 2^1
     A = Y
-    XOR A 253
+    AND A 2
     JPZ shiftone
     XOR CARRY 4
     Shiftone:
     // bit 2^2
     A = Y
-    XOR A 251
+    AND A 4
     JPZ shifttwo
-    XOR CARRY 4
+    XOR CARRY 8
     Shifttwo:
     // bit 2^3
     A = Y
-    XOR A 247
+    AND A 8
     JPZ shiftthree
-    XOR CARRY 8
+    XOR CARRY 16
     Shiftthree:
     // bit 2^4
     A = Y
-    XOR A 239
+    AND A 16
     JPZ shiftfour
-    XOR CARRY 16
+    XOR CARRY 32
     Shiftfour:
     // bit 2^5
     A = Y
-    XOR A 223
+    AND A 32
     JPZ shiftfive
-    XOR CARRY 32
+    XOR CARRY 64
     Shiftfive:
     // bit 2^6
     A = Y
-    XOR A 191
+    AND A 64
     JPZ shiftsix
-    XOR CARRY 64
+    XOR CARRY 128
     Shiftsix:
+    // BIT 2^7
+    A = Y
+    AND A 128
+    JPZ shiftseven
+    // overflow bit is discarded
+    XOR CARRY 255
+    Shiftseven:
 
     // return if no carry
-    AND CARRY 1
+    AND CARRY 255
     JPZ addend
 
     // loop if carry
     X = SUM
+    Y = CARRY
     AND 0 0
     JPZ addstart
 
 Addend:
-    X = SUM  // 00110001
+    X = SUM  // 00110001 = 49
