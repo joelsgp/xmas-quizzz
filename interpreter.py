@@ -54,15 +54,17 @@ def update_stepthrough(stepthrough: Stepthrough, instruction: int, line: str, va
     stepthrough.append(new_step)
 
 
-def execute_lines(lines: list[str], variables: Namespace) -> Stepthrough:
+def execute_lines(lines: list[str], args: Namespace) -> Stepthrough:
     stepthrough = []
     last_calculation = 0
     ic = 0
     ic_max = len(lines)
     addresses = get_addresses(lines)
+    variables = {}
     variables.update(addresses)
-
-    update_stepthrough(stepthrough, ic, '', variables)
+    update_stepthrough(stepthrough, ic, '(Addresses)', variables)
+    variables.update(args)
+    update_stepthrough(stepthrough, ic, '(Args)', variables)
 
     # the duplicated loop continuation blocks are a bit nasty
     while True:
@@ -181,7 +183,7 @@ def run_file(file_path: str, args: Namespace = None) -> Stepthrough:
 
 
 def main():
-    stepthrough = run_file(SOURCE_FILE)
+    stepthrough = run_file(SOURCE_FILE, {'X': 14, 'Y': 35})
     table = print_stepthrough(stepthrough)
     print(table)
 
