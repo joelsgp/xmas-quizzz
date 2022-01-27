@@ -56,11 +56,12 @@ def update_stepthrough(stepthrough: Stepthrough, instruction: int, line: str, va
 
 def execute_lines(lines: list[str]) -> Stepthrough:
     stepthrough = []
-    variables = {}
     last_calculation = 0
     ic = 0
     ic_max = len(lines)
     addresses = get_addresses(lines)
+    variables = {}
+    variables.update(addresses)
 
     # the duplicated loop continuation blocks are a bit nasty
     while True:
@@ -93,7 +94,7 @@ def execute_lines(lines: list[str]) -> Stepthrough:
             update_stepthrough(stepthrough, ic, instruction, variables)
             if last_calculation == 0:
                 jump_address = match[1]
-                ic = addresses[jump_address]
+                ic = variables[jump_address]
             else:
                 ic += 1
             continue
@@ -140,7 +141,9 @@ def print_stepthrough(stepthrough: Stepthrough) -> str:
         column_contents.append(variable_column)
 
     column_widths_headless = [max(len(x) for x in column) for column in column_contents]
-    column_widths = [max(len(head), max_value) for head, max_value in zip(column_headers, column_widths_headless)]
+    column_widths = [
+        max(len(head), max_value) for head, max_value in zip(column_headers, column_widths_headless)
+    ]
     # pad instruction counter
     ic_fstring = f'{{:>{column_widths_headless[0]}}}'
     column_contents[0] = [ic_fstring.format(ic) for ic in column_contents[0]]
