@@ -26,50 +26,42 @@ Addstart:
     AND Y X
     CARRY = 0
     // bit 2^0
-    A = Y
-    AND A 1
+    AND 1 Y
     JPZ shiftzero
     XOR CARRY 2
     Shiftzero:
     // bit 2^1
-    A = Y
-    AND A 2
+    AND 2 Y
     JPZ shiftone
     XOR CARRY 4
     Shiftone:
     // bit 2^2
-    A = Y
-    AND A 4
+    AND 4 Y
     JPZ shifttwo
     XOR CARRY 8
     Shifttwo:
     // bit 2^3
-    A = Y
-    AND A 8
+    AND 8 Y
     JPZ shiftthree
     XOR CARRY 16
     Shiftthree:
     // bit 2^4
-    A = Y
-    AND A 16
+    AND 16 Y
     JPZ shiftfour
     XOR CARRY 32
     Shiftfour:
     // bit 2^5
-    A = Y
-    AND A 32
+    AND 32 Y
     JPZ shiftfive
     XOR CARRY 64
     Shiftfive:
     // bit 2^6
-    A = Y
-    AND A 64
+    AND 64 Y
     JPZ shiftsix
     XOR CARRY 128
     Shiftsix:
     // BIT 2^7
-    A = Y
-    AND A 128
+    AND 128 Y
     JPZ shiftseven
     // overflow bit is discarded
     XOR CARRY 255
