@@ -22,7 +22,7 @@ Addstart:
     SUM = X
     XOR SUM Y
 
-    // AND, then left shift for carry
+    // AND then << for carry
     AND Y X
     CARRY = 0
     // bit 2^0
