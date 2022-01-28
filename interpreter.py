@@ -24,7 +24,7 @@ PRINT_BINARY_FORMAT = '{:0>8b}'
 
 Namespace = dict[str, int]
 Lines = list[str]
-Stepthrough = list[tuple[int, str, Namespace]]
+Stepthrough = list[tuple[int, str, Namespace, int]]
 
 
 def process_lines(source: str) -> Lines:
@@ -49,22 +49,25 @@ def extract_arg(arg: str, variables: Namespace) -> int:
         return variables[arg]
 
 
-def update_stepthrough(stepthrough: Stepthrough, instruction: int, line: str, variables: Namespace):
-    new_step = (instruction, line, variables.copy())
+def update_stepthrough(
+        stepthrough: Stepthrough, instruction: int, line: str, variables: Namespace, steps: int
+):
+    new_step = (instruction, line, variables.copy(), steps)
     stepthrough.append(new_step)
 
 
 def execute_lines(lines: list[str], args: Namespace) -> Stepthrough:
     stepthrough = []
+    steps = 0
     last_calculation = 0
     ic = 0
     ic_max = len(lines)
     addresses = get_addresses(lines)
     variables = {}
     variables.update(addresses)
-    update_stepthrough(stepthrough, ic, '(Addresses)', variables)
+    update_stepthrough(stepthrough, ic, '(Addresses)', variables, steps)
     variables.update(args)
-    update_stepthrough(stepthrough, ic, '(Args)', variables)
+    update_stepthrough(stepthrough, ic, '(Args)', variables, steps)
 
     # the duplicated loop continuation blocks are a bit nasty
     while True:
@@ -73,10 +76,11 @@ def execute_lines(lines: list[str], args: Namespace) -> Stepthrough:
             break
 
         instruction = lines[ic]
+        steps += 1
 
         # address declarations are skipped
         if ic in addresses.values():
-            update_stepthrough(stepthrough, ic, instruction, variables)
+            update_stepthrough(stepthrough, ic, instruction, variables, steps)
             ic += 1
             continue
 
@@ -87,14 +91,14 @@ def execute_lines(lines: list[str], args: Namespace) -> Stepthrough:
             assignee = match[2]
             assignee_ex = extract_arg(assignee, variables)
             variables[name] = assignee_ex
-            update_stepthrough(stepthrough, ic, instruction, variables)
+            update_stepthrough(stepthrough, ic, instruction, variables, steps)
             ic += 1
             continue
 
         # jump
         match = REGEX_JUMP.match(instruction)
         if match is not None:
-            update_stepthrough(stepthrough, ic, instruction, variables)
+            update_stepthrough(stepthrough, ic, instruction, variables, steps)
             if last_calculation == 0:
                 jump_address = match[1].upper()
                 ic = variables[jump_address]
@@ -116,7 +120,7 @@ def execute_lines(lines: list[str], args: Namespace) -> Stepthrough:
                 last_calculation = arg_left_ex ^ arg_right_ex
             if not arg_left.isdigit():  # left arg is a name not a literal
                 variables[arg_left] = last_calculation
-            update_stepthrough(stepthrough, ic, instruction, variables)
+            update_stepthrough(stepthrough, ic, instruction, variables, steps)
             ic += 1
             continue
 
@@ -129,8 +133,9 @@ def print_stepthrough(stepthrough: Stepthrough) -> str:
     addresses = stepthrough[0][2]
     final_variables = stepthrough[-1][2]
 
-    column_headers = ['IC', 'Instruction']
+    column_headers = ['Step', 'IC', 'Instruction']
     column_contents = [
+        [str(s[3]) for s in stepthrough],
         [str(s[0]) for s in stepthrough],
         [s[1] for s in stepthrough],
     ]
