@@ -24,6 +24,11 @@ Addstart:
 
     // AND then << for carry
     AND Y X
+
+    // return if no carry
+    AND 255 Y
+    JPZ addend
+
     CARRY = 0
     // bit 2^0
     AND 1 Y
@@ -64,11 +69,11 @@ Addstart:
     AND 128 Y
     JPZ shiftseven
     // overflow bit is discarded
-    XOR CARRY 255
+    XOR CARRY 128
     Shiftseven:
 
     // return if no carry
-    AND CARRY 255
+    AND 255 CARRY
     JPZ addend
 
     // loop if carry
