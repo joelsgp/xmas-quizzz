@@ -171,13 +171,18 @@ def print_stepthrough(stepthrough: Stepthrough) -> str:
     return '\n'.join(table_lines)
 
 
+def load_file(file_path: str) -> Lines:
+    with open(file_path, encoding='utf-8') as file:
+        source = file.read()
+    lines = process_lines(source)
+    return lines
+
+
 def run_file(file_path: str, args: Namespace = None) -> Stepthrough:
     if args is None:
         args = {}
 
-    with open(file_path, encoding='utf-8') as file:
-        source = file.read()
-    lines = process_lines(source)
+    lines = load_file(file_path)
     stepthrough = execute_lines(lines, args)
     return stepthrough
 
