@@ -7,19 +7,22 @@ Sorry for python 3, python 2 is too expensive
 
 from __future__ import annotations
 import re
+from argparse import ArgumentParser
+from pathlib import Path
 
 
-SOURCE_FILE = 'ADDER.asm'
+__version__ = '1.0.0'
 
 
+DEFAULT_FILE = 'ADDER.asm'
+PRINT_SEP = '  '
+PRINT_UNDERLINE = '-'
+PRINT_BINARY_FORMAT = '{:0>8b}'
 REGEX_LINE = re.compile(r'^\s*(.*?)\s*(?://.*)?$', re.MULTILINE)
 REGEX_ADDRESS = re.compile(r'^([A-Z][a-z]*):$')
 REGEX_ASSIGNMENT = re.compile(r'^([A-Z]+) = ([A-Z]+|[0-9]+)$')
 REGEX_JUMP = re.compile(r'^JPZ ([a-z]+)$')
 REGEX_OPERATION = re.compile(r'^(AND|XOR) ([A-Z]+|[0-9]+) ([A-Z]+|[0-9]+)$')
-PRINT_SEP = '  '
-PRINT_UNDERLINE = '-'
-PRINT_BINARY_FORMAT = '{:0>8b}'
 
 
 Namespace = dict[str, int]
@@ -192,8 +195,19 @@ def run_file(file_path: str, args: Namespace = None) -> Stepthrough:
     return stepthrough
 
 
+def get_parser() -> ArgumentParser:
+    parser = ArgumentParser()
+
+    parser.add_argument('--version', action='version', version=__version__)
+    parser.add_argument('file', type=Path, nargs='?', default=DEFAULT_FILE)
+
+    return parser
+
+
 def main():
-    stepthrough = run_file(SOURCE_FILE, {'X': 14, 'Y': 35})
+    parser = get_parser()
+    args = parser.parse_args()
+    stepthrough = run_file(args.file, {'X': 14, 'Y': 35})
     table = print_stepthrough(stepthrough)
     print(table)
 
