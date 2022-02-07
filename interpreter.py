@@ -1,7 +1,16 @@
 """Simple assembly interpreter.
 
 Designed for the Very Very Reduced Instruction Set language specified in xmas quizzz.
-File to run specified by SOURCE_FILE, haven't bothered to add an argparser.
+interpreter.py -h for command line args.
+
+Significant functions:
+    load_file -- load assembly file as list of instructions
+                 with whitespace and comments removed
+    execute_lines -- execute list of instructions and return a stepthrough
+    run_file -- equivalent to load_file then execute_lines
+    print_stepthrough -- take a stepthrough and return a neatly justified tabulated string
+    main -- run argparser then run_file and print_stepthrough
+
 Sorry for python 3, python 2 is too expensive
 """
 
